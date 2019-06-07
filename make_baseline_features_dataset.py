@@ -132,6 +132,11 @@ def construct_dataset_weekly(instances, feature_graph, label_graph):
     train_dict = {'pair':instances}
     test_dict = {'pair':instances}
 
+    flattened = [item for sublist in instances for item in sublist]
+    node_set = set(flattened)
+    nodes_not_included = [n for n in node_set if n not in feature_graph.nodes()]
+    feature_graph.add_nodes_from(nodes_not_included)
+
     # Construct train dataset
     pa = preferential_attachment(feature_graph, instances)
     train_dict['PA'] = pa
@@ -178,8 +183,8 @@ if __name__ == "__main__":
 
     summary_dict = {'Aggregated_new_edges':[], 'BC_new_edges':[], 'GD_new_edges':[], 'MB_new_edges':[], 'PM_new_edges':[]}
 
-    # for i in range(end_week - start_week):
-    for i in range(1):
+    for i in range(end_week - start_week-1):
+    # for i in range(1):
 
         # construct graphs based on each channel
         print('Making week{} train and test data...'.format(start_week+i))
@@ -188,50 +193,58 @@ if __name__ == "__main__":
         mb_graph = construct_graph(mb_weeks_subset[i])
         pm_graph = construct_graph(pm_weeks_subset[i])
 
-        print('Generating first model...')
+        print('Preparing graphs and instances for models...')
         # construct this week aggregated network - trainset feature
         aggregated_df = pd.concat([bc_weeks_subset[i], gd_weeks_subset[i], mb_weeks_subset[i], pm_weeks_subset[i]], ignore_index=True, sort=False) 
         aggregated_graph = construct_graph(aggregated_df)
 
         # construct next week aggregated network - trainset label, testset feature
-        nextweek_agg_df = pd.concat([bc_weeks_subset[i+1], gd_weeks_subset[i+1], mb_weeks_subset[i+1], pm_weeks_subset[i+1]],ignore_index=True,  sort=False)
+        nextweek_agg_df = pd.concat([bc_weeks_subset[i+1], gd_weeks_subset[i+1], mb_weeks_subset[i+1], pm_weeks_subset[i+1]],ignore_index=True, sort=False)
         nextweek_agg_graph = construct_graph(nextweek_agg_df)
 
         # construct next next week aggregated network - testset label
         nextnextweek_agg_df = pd.concat([bc_weeks_subset[i+2], gd_weeks_subset[i+2], mb_weeks_subset[i+2], pm_weeks_subset[i+2]],ignore_index=True, sort=False)
         nextnextweek_agg_graph = construct_graph(nextnextweek_agg_df)
 
+        # BC
+        nextweek_bc_graph = construct_graph(bc_weeks_subset[i+1])
+        nextnextweek_bc_graph = construct_graph(bc_weeks_subset[i+2])
+        # GD
+        nextweek_gd_graph = construct_graph(gd_weeks_subset[i+1])
+        nextnextweek_gd_graph = construct_graph(gd_weeks_subset[i+2])
+        # MB
+        nextweek_mb_graph = construct_graph(mb_weeks_subset[i+1])
+        nextnextweek_mb_graph = construct_graph(mb_weeks_subset[i+2])
+        # PM
+        nextweek_pm_graph = construct_graph(pm_weeks_subset[i+1])
+        nextnextweek_pm_graph = construct_graph(pm_weeks_subset[i+2])
+
         # make instances for train aggregated network
         train_instances = generate_2hop_instances(aggregated_graph)
-
-        ## Baseline models with 3 features in aggregated network 
-        train_df = construct_dataset_weekly(train_instances, aggregated_graph, nextweek_agg_graph)
-
-        test_instances = generate_2hop_instances(nextweek_agg_graph)
+        # make instances for test aggregated network
         # consider only new links in test dataset
+        test_instances = generate_2hop_instances(nextweek_agg_graph)
         test_new_instances = set(test_instances) - set(train_instances)
         test_new_instances = list(test_new_instances)
 
+        print('Generating first model...')
+        ## Baseline models with 3 features in aggregated network 
+        train_df = construct_dataset_weekly(train_instances, aggregated_graph, nextweek_agg_graph)
         test_df = construct_dataset_weekly(test_new_instances, nextweek_agg_graph, nextnextweek_agg_graph)
+        train_df.columns = ['pair','Agg_PA','Agg_AA','Agg_JC','label']
+        test_df.columns = ['pair','Agg_PA','Agg_AA','Agg_JC','label']
         summary_dict['Aggregated_new_edges'].append(test_df.label.sum())
 
         print('Saving dataset to csv file...')
         train_df.to_csv('data/baseline_agg/bax_week{}_train.csv'.format(start_week+i), index=False)
-
         test_df.to_csv('data/baseline_agg/bax_week{}_test.csv'.format(start_week+i), index=False)
 
         print('Generating second model...')
-        # make instances for train BC network
-        nextweek_bc_graph = construct_graph(bc_weeks_subset[i+1])
-        nextnextweek_bc_graph = construct_graph(bc_weeks_subset[i+2])
 
-        bc_train_instances = generate_2hop_instances(bc_graph)
-        bc_train_df = construct_dataset_weekly(bc_train_instances, bc_graph, nextweek_bc_graph)
-        
-        bc_test_instances = generate_2hop_instances(nextweek_bc_graph)
-        bc_test_new_instances = set(bc_test_instances) - set(bc_train_instances)
-        bc_test_new_instances = list(bc_test_new_instances)
-        bc_test_df = construct_dataset_weekly(bc_test_new_instances, nextweek_bc_graph, nextnextweek_bc_graph)
+        bc_train_df = construct_dataset_weekly(train_instances, bc_graph, nextweek_bc_graph)
+        bc_test_df = construct_dataset_weekly(test_new_instances, nextweek_bc_graph, nextnextweek_bc_graph)
+        bc_train_df.columns = ['pair','BC_PA','BC_AA','BC_JC','label'] 
+        bc_test_df.columns = ['pair','BC_PA','BC_AA','BC_JC','label'] 
 
         summary_dict['BC_new_edges'].append(bc_test_df.label.sum())
         
@@ -240,61 +253,70 @@ if __name__ == "__main__":
         bc_test_df.to_csv('data/baseline_BC/bax_week{}_test.csv'.format(start_week+i), index=False)
 
         print('Generating third model...')
-        # make instances for train GD network
-        nextweek_gd_graph = construct_graph(gd_weeks_subset[i+1])
-        nextnextweek_gd_graph = construct_graph(gd_weeks_subset[i+2])
 
-        gd_train_instances = generate_2hop_instances(gd_graph)
-        gd_train_df = construct_dataset_weekly(gd_train_instances, gd_graph, nextweek_gd_graph)
+        gd_train_df = construct_dataset_weekly(train_instances, gd_graph, nextweek_gd_graph)
         
-        gd_test_instances = generate_2hop_instances(nextweek_gd_graph)
-        gd_test_new_instances = set(gd_test_instances) - set(gd_train_instances)
-        gd_test_new_instances = list(gd_test_new_instances)
-        gd_test_df = construct_dataset_weekly(gd_test_new_instances, nextweek_gd_graph, nextnextweek_gd_graph)
+        gd_test_df = construct_dataset_weekly(test_new_instances, nextweek_gd_graph, nextnextweek_gd_graph)
+        gd_train_df.columns = ['pair','GD_PA','GD_AA','GD_JC','label'] 
+        gd_test_df.columns = ['pair','GD_PA','GD_AA','GD_JC','label'] 
 
         summary_dict['GD_new_edges'].append(gd_test_df.label.sum())
+
         print('Saving dataset to csv file...')
         gd_train_df.to_csv('data/baseline_GD/bax_week{}_train.csv'.format(start_week+i), index=False)
         gd_test_df.to_csv('data/baseline_GD/bax_week{}_test.csv'.format(start_week+i), index=False)
         
         print('Generating fourth model...')
-        # make instances for train MB network
-        nextweek_mb_graph = construct_graph(mb_weeks_subset[i+1])
-        nextnextweek_mb_graph = construct_graph(mb_weeks_subset[i+2])
 
-        mb_train_instances = generate_2hop_instances(mb_graph)
-        mb_train_df = construct_dataset_weekly(mb_train_instances, mb_graph, nextweek_mb_graph)
+        mb_train_df = construct_dataset_weekly(train_instances, mb_graph, nextweek_mb_graph)
         
-        mb_test_instances = generate_2hop_instances(nextweek_mb_graph)
-        mb_test_new_instances = set(mb_test_instances) - set(mb_train_instances)
-        mb_test_new_instances = list(mb_test_new_instances)
-        mb_test_df = construct_dataset_weekly(mb_test_new_instances, nextweek_mb_graph, nextnextweek_mb_graph)
+        mb_test_df = construct_dataset_weekly(test_new_instances, nextweek_mb_graph, nextnextweek_mb_graph)
+        mb_train_df.columns = ['pair','MB_PA','MB_AA','MB_JC','label'] 
+        mb_test_df.columns = ['pair','MB_PA','MB_AA','MB_JC','label'] 
 
         summary_dict['MB_new_edges'].append(mb_test_df.label.sum())
+
         print('Saving dataset to csv file...')
         mb_train_df.to_csv('data/baseline_MB/bax_week{}_train.csv'.format(start_week+i), index=False)
         mb_test_df.to_csv('data/baseline_MB/bax_week{}_test.csv'.format(start_week+i), index=False)
 
         print('Generating fifth model...')
-        # make instances for train PM network
-        nextweek_pm_graph = construct_graph(pm_weeks_subset[i+1])
-        nextnextweek_pm_graph = construct_graph(pm_weeks_subset[i+2])
 
-        pm_train_instances = generate_2hop_instances(pm_graph)
-        pm_train_df = construct_dataset_weekly(pm_train_instances, pm_graph, nextweek_pm_graph)
+        pm_train_df = construct_dataset_weekly(train_instances, pm_graph, nextweek_pm_graph)
         
-        pm_test_instances = generate_2hop_instances(nextweek_pm_graph)
-        pm_test_new_instances = set(pm_test_instances) - set(pm_train_instances)
-        pm_test_new_instances = list(pm_test_new_instances)
-        pm_test_df = construct_dataset_weekly(pm_test_new_instances, nextweek_pm_graph, nextnextweek_pm_graph)
+        pm_test_df = construct_dataset_weekly(test_new_instances, nextweek_pm_graph, nextnextweek_pm_graph)
+        pm_train_df.columns = ['pair','PM_PA','PM_AA','PM_JC','label'] 
+        pm_test_df.columns = ['pair','PM_PA','PM_AA','PM_JC','label'] 
 
         summary_dict['PM_new_edges'].append(pm_test_df.label.sum())
+
         print('Saving dataset to csv file...')
         pm_train_df.to_csv('data/baseline_PM/bax_week{}_train.csv'.format(start_week+i), index=False)
         pm_test_df.to_csv('data/baseline_PM/bax_week{}_test.csv'.format(start_week+i), index=False)
 
+        print('Generating sixth model...')
+        # Generate the proposed model with 12 features
+        proposed_train_df = pd.DataFrame({'pair':train_instances})
+        proposed_train_df = pd.concat([proposed_train_df, bc_train_df[['BC_PA','BC_AA','BC_JC']]], axis=1)
+        proposed_train_df = pd.concat([proposed_train_df, gd_train_df[['GD_PA','GD_AA','GD_JC']]], axis=1)
+        proposed_train_df = pd.concat([proposed_train_df, mb_train_df[['MB_PA','MB_AA','MB_JC']]], axis=1)
+        proposed_train_df = pd.concat([proposed_train_df, pm_train_df[['PM_PA','PM_AA','PM_JC']]], axis=1)
+        proposed_train_df = pd.concat([proposed_train_df, train_df[['label']]], axis=1)
+
+        proposed_test_df = pd.DataFrame({'pair':test_new_instances})
+        proposed_test_df = pd.concat([proposed_test_df, bc_test_df[['BC_PA','BC_AA','BC_JC']]], axis=1)
+        proposed_test_df = pd.concat([proposed_test_df, gd_test_df[['GD_PA','GD_AA','GD_JC']]], axis=1)
+        proposed_test_df = pd.concat([proposed_test_df, mb_test_df[['MB_PA','MB_AA','MB_JC']]], axis=1)
+        proposed_test_df = pd.concat([proposed_test_df, pm_test_df[['PM_PA','PM_AA','PM_JC']]], axis=1)
+        proposed_test_df = pd.concat([proposed_test_df, test_df[['label']]], axis=1)
+
+        print('Saving dataset to csv file...')
+        proposed_train_df.to_csv('data/proposed_model/bax_week{}_train.csv'.format(start_week+i), index=False)
+        proposed_test_df.to_csv('data/proposed_model/bax_week{}_test.csv'.format(start_week+i), index=False)
+
     summary_df = pd.DataFrame(summary_dict)
     summary_df.to_csv('summary_statistics.csv')
+    
 
 
 
