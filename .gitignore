@@ -3,3 +3,6 @@
 
 # ignore files in directories
 data/
+
+# MAC some unwanted file
+.DS_Store 
