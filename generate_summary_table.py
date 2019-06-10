@@ -51,9 +51,11 @@ if __name__ == "__main__":
 
                 filename = "result/{}/{}_{}_week_{}_{}.csv".format(folder, metric, cf, startweek, endweek)
                 df = pd.read_csv(filename)
-                summary[row_idx, col_idx:col_idx+n_strategy] = list(df.mean())
+                # If there is -1 in the dataframe, disregard that entry
+                summary[row_idx, col_idx:col_idx+n_strategy] = list(df[df!=-1].mean())
 
-    column_names = strategy_list * n_folder
+    # column_names = strategy_list * n_folder
+    column_names = folder_list
     row_names = metric_list * n_classifier
 
     df_summary = pd.DataFrame(
