@@ -91,15 +91,19 @@ if __name__ == "__main__":
         y_test = np.array(test_df['label'])
 
         clf = GaussianNB()
-        clf.fit(X_train, y_train)
+        try:
+            clf.fit(X_train, y_train)
+                #predict
+            y_pred = clf.predict(X_test)
+            y_pred_prob = clf.predict_proba(X_test)
+            test_results[i] = evaluate(y_test, y_pred)
 
-            #predict
-        y_pred = clf.predict(X_test)
-        y_pred_prob = clf.predict_proba(X_test)
-        test_results[i] = evaluate(y_test, y_pred)
-
-        for idx, k in enumerate(k_list):
-            topk_results[i, idx*2: idx*2+2] = evaluate_topk(y_test, y_pred_prob, clf, k=k)
+            for idx, k in enumerate(k_list):
+                topk_results[i, idx*2: idx*2+2] = evaluate_topk(y_test, y_pred_prob, clf, k=k)
+        except Exception as e:
+            print(e)
+            test_results[i] = np.array([-1,-1,-1,-1])
+            topk_results[i] = np.array([-1,-1,-1,-1,-1,-1])
 
     column_names = ["All"]
     df_precision_test = pd.DataFrame(
