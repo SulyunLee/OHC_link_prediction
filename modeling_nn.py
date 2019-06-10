@@ -116,7 +116,7 @@ if __name__ == "__main__":
         
         # Set a checkpointer to save the best weights
         checkpointer = ModelCheckpoint(filepath='saved_models/{}.weights.best.hdf5'.format(folder), 
-                                               verbose=1, save_best_only=True)
+                                               verbose=0, save_best_only=True)
 
         try:
             # Train the model
