@@ -21,8 +21,14 @@ from keras.layers import Dense, Dropout, Activation
 from keras.utils import to_categorical
 from keras.callbacks import ModelCheckpoint  
 from keras import backend as K
-import keras_metrics
+# import keras_metrics
 import tensorflow as tf
+
+# Adapted this function from https://stackoverflow.com/a/51436745/4595935
+def keras_auc(y_true, y_pred):
+    auc = tf.metrics.auc(y_true, y_pred)[1]
+    K.get_session().run(tf.local_variables_initializer())
+    return auc
 
 def evaluate(y_true, y_pred):
     accuracy =  accuracy_score(y_true, y_pred)
@@ -111,7 +117,8 @@ if __name__ == "__main__":
         model.add(Dense(32, activation='relu', input_shape=(X_train.shape[1],)))
         model.add(Dropout(.2))
         model.add(Dense(2, activation='softmax'))
-        model.compile(loss = 'binary_crossentropy', optimizer='adam', metrics=[keras_metrics.precision()])
+        # model.compile(loss = 'binary_crossentropy', optimizer='adam', metrics=[keras_metrics.precision()])
+        model.compile(loss = 'binary_crossentropy', optimizer='adam', metrics=[keras_auc])
         model.summary()
         
         # Set a checkpointer to save the best weights
@@ -120,7 +127,7 @@ if __name__ == "__main__":
 
         try:
             # Train the model
-            model.fit(X_train, y_onehot_train, epochs=10, batch_size=20, verbose=1, validation_split=0.2, callbacks=[checkpointer])
+            model.fit(X_train, y_onehot_train, epochs=10, batch_size=20, verbose=0, validation_split=0.2, callbacks=[checkpointer])
 
             # Evaluate the model
             y_pred = model.predict_classes(X_test)
