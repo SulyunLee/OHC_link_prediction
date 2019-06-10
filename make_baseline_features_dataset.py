@@ -183,8 +183,8 @@ if __name__ == "__main__":
 
     summary_dict = {'Aggregated_new_edges':[], 'BC_new_edges':[], 'GD_new_edges':[], 'MB_new_edges':[], 'PM_new_edges':[]}
 
-    for i in range(end_week - start_week-1):
-    # for i in range(1):
+    # for i in range(end_week - start_week-1):
+    for i in range(12, 13):
 
         # construct graphs based on each channel
         print('Making week{} train and test data...'.format(start_week+i))
@@ -227,6 +227,7 @@ if __name__ == "__main__":
         test_new_instances = set(test_instances) - set(train_instances)
         test_new_instances = list(test_new_instances)
 
+    ''' 
         print('Generating first model...')
         ## Baseline models with 3 features in aggregated network 
         train_df = construct_dataset_weekly(train_instances, aggregated_graph, nextweek_agg_graph)
@@ -316,6 +317,7 @@ if __name__ == "__main__":
 
     summary_df = pd.DataFrame(summary_dict)
     summary_df.to_csv('summary_statistics.csv')
+    '''
     
 
 
