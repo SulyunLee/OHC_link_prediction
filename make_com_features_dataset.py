@@ -109,16 +109,12 @@ if __name__ == "__main__":
 
         # BC
         nextweek_bc_graph = construct_graph(bc_weeks_subset[i+1])
-        nextnextweek_bc_graph = construct_graph(bc_weeks_subset[i+2])
         # GD
         nextweek_gd_graph = construct_graph(gd_weeks_subset[i+1])
-        nextnextweek_gd_graph = construct_graph(gd_weeks_subset[i+2])
         # MB
         nextweek_mb_graph = construct_graph(mb_weeks_subset[i+1])
-        nextnextweek_mb_graph = construct_graph(mb_weeks_subset[i+2])
         # PM
         nextweek_pm_graph = construct_graph(pm_weeks_subset[i+1])
-        nextnextweek_pm_graph = construct_graph(pm_weeks_subset[i+2])
 
         tqdm.pandas()
 
@@ -131,14 +127,14 @@ if __name__ == "__main__":
         modularity_community_train = greedy_modularity_communities(pm_graph)
         input_train_df['PM_CM'] = input_train_df.progress_apply(community_label, community_obj=modularity_community_train, graph=pm_graph, axis=1)
 
-        modularity_community_test = greedy_modularity_communities(bc_graph)
-        input_test_df['BC_CM'] = input_test_df.progress_apply(community_label, community_obj=modularity_community_test, graph=bc_graph, axis=1)
-        modularity_community_test = greedy_modularity_communities(gd_graph)
-        input_test_df['GD_CM'] = input_test_df.progress_apply(community_label, community_obj=modularity_community_test, graph=gd_graph, axis=1)
-        modularity_community_test = greedy_modularity_communities(mb_graph)
-        input_test_df['MB_CM'] = input_test_df.progress_apply(community_label, community_obj=modularity_community_test, graph=mb_graph, axis=1)
-        modularity_community_test = greedy_modularity_communities(pm_graph)
-        input_test_df['PM_CM'] = input_test_df.progress_apply(community_label, community_obj=modularity_community_test, graph=pm_graph, axis=1)
+        modularity_community_test = greedy_modularity_communities(nextweek_bc_graph)
+        input_test_df['BC_CM'] = input_test_df.progress_apply(community_label, community_obj=modularity_community_test, graph=nextweek_bc_graph, axis=1)
+        modularity_community_test = greedy_modularity_communities(nextweek_gd_graph)
+        input_test_df['GD_CM'] = input_test_df.progress_apply(community_label, community_obj=modularity_community_test, graph=nextweek_gd_graph, axis=1)
+        modularity_community_test = greedy_modularity_communities(nextweek_mb_graph)
+        input_test_df['MB_CM'] = input_test_df.progress_apply(community_label, community_obj=modularity_community_test, graph=nextweek_mb_graph, axis=1)
+        modularity_community_test = greedy_modularity_communities(nextweek_pm_graph)
+        input_test_df['PM_CM'] = input_test_df.progress_apply(community_label, community_obj=modularity_community_test, graph=nextweek_pm_graph, axis=1)
 
         # Label propagation
         label_prop_community_train = label_prop(bc_graph)
@@ -150,12 +146,12 @@ if __name__ == "__main__":
         label_prop_community_train = label_prop(pm_graph)
         input_train_df['PM_CLP'] = input_train_df.progress_apply(community_label, community_obj=label_prop_community_train, graph=pm_graph, axis=1)
         
-        label_prop_community_test = label_prop(bc_graph)
-        input_test_df['BC_CLP'] = input_test_df.progress_apply(community_label, community_obj=label_prop_community_test, graph=bc_graph, axis=1)
-        label_prop_community_test = label_prop(gd_graph)
-        input_test_df['GD_CLP'] = input_test_df.progress_apply(community_label, community_obj=label_prop_community_test, graph=gd_graph, axis=1)
-        label_prop_community_test = label_prop(mb_graph)
-        input_test_df['MB_CLP'] = input_test_df.progress_apply(community_label, community_obj=label_prop_community_test, graph=mb_graph, axis=1)
+        label_prop_community_test = label_prop(nextweek_bc_graph)
+        input_test_df['BC_CLP'] = input_test_df.progress_apply(community_label, community_obj=label_prop_community_test, graph=nextweek_bc_graph, axis=1)
+        label_prop_community_test = label_prop(nextweek_gd_graph)
+        input_test_df['GD_CLP'] = input_test_df.progress_apply(community_label, community_obj=label_prop_community_test, graph=nextweek_gd_graph, axis=1)
+        label_prop_community_test = label_prop(nextweek_mb_graph)
+        input_test_df['MB_CLP'] = input_test_df.progress_apply(community_label, community_obj=label_prop_community_test, graph=nextweek_mb_graph, axis=1)
         label_prop_community_test = label_prop(pm_graph)
         input_test_df['PM_CLP'] = input_test_df.progress_apply(community_label, community_obj=label_prop_community_test, graph=pm_graph, axis=1)
 

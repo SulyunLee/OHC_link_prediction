@@ -35,6 +35,24 @@ def preprocess_networks(edgelist, start_week, end_week):
     return weeks_subset
 
 
+def compute_emb_similarity(instance, emb_dict):
+    if instance[0] in emb_dict and instance[1] in emb_dict:
+        node1_rep = np.array(emb_dict[instance[0]]).reshape(1,-1)
+        node2_rep = np.array(emb_dict[instance[1]]).reshape(1,-1)
+        similarity = float(cosine_similarity(node1_rep, node2_rep))
+        return similarity
+    # if either of nodes do not exist in the graph, return 0
+    else:
+        return 0
+
+def make_embedding_feature(row, emb_df):
+
+    instance = eval(row['pair'])
+    sim = compute_emb_similarity(instance, emb_df)
+
+    return sim
+
+'''
 def compute_emb_similarity(instance, emb_df):
     if instance[0] in emb_df.values[:,0] and instance[1] in emb_df.values[:,0]:
         node1_rep = emb_df.loc[emb_df.values[:,0] == instance[0],1:]
@@ -51,6 +69,7 @@ def make_embedding_feature(row, emb_df):
     sim = compute_emb_similarity(instance, emb_df)
 
     return sim
+'''
     
 
 
@@ -65,8 +84,8 @@ if __name__ == "__main__":
     #----------------------------------------------------
 
 
-    for i in range(end_week - start_week - 1):
-    # for i in range(1):
+    # for i in range(end_week - start_week - 1):
+    for i in range(1):
 
         input_train_df = pd.read_csv(data_dir + 'bax_week{}_train.csv'.format(start_week+i))
         input_test_df = pd.read_csv(data_dir + 'bax_week{}_test.csv'.format(start_week+i))
@@ -87,15 +106,23 @@ if __name__ == "__main__":
 
 
         tqdm.pandas()
-        input_train_df['BC_emb'] = input_train_df.progress_apply(make_embedding_feature, args=[bc_emb_train], axis=1)
-        input_train_df['GD_emb'] = input_train_df.progress_apply(make_embedding_feature, args=[gd_emb_train], axis=1)
-        input_train_df['MB_emb'] = input_train_df.progress_apply(make_embedding_feature, args=[mb_emb_train], axis=1)
-        input_train_df['PM_emb'] = input_train_df.progress_apply(make_embedding_feature, args=[pm_emb_train], axis=1)
+        bc_dict = bc_emb_train.set_index(0).T.to_dict('list')
+        input_train_df['BC_emb'] = input_train_df.progress_apply(make_embedding_feature, args=[bc_dict], axis=1)
+        gd_dict = gd_emb_train.set_index(0).T.to_dict('list')
+        input_train_df['GD_emb'] = input_train_df.progress_apply(make_embedding_feature, args=[gd_dict], axis=1)
+        mb_dict = mb_emb_train.set_index(0).T.to_dict('list')
+        input_train_df['MB_emb'] = input_train_df.progress_apply(make_embedding_feature, args=[mb_dict], axis=1)
+        pm_dict = pm_emb_train.set_index(0).T.to_dict('list')
+        input_train_df['PM_emb'] = input_train_df.progress_apply(make_embedding_feature, args=[pm_dict], axis=1)
 
-        input_test_df['BC_emb'] = input_test_df.progress_apply(make_embedding_feature, args=[bc_emb_test], axis=1)
-        input_test_df['GD_emb'] = input_test_df.progress_apply(make_embedding_feature, args=[gd_emb_test], axis=1)
-        input_test_df['MB_emb'] = input_test_df.progress_apply(make_embedding_feature, args=[mb_emb_test], axis=1)
-        input_test_df['PM_emb'] = input_test_df.progress_apply(make_embedding_feature, args=[pm_emb_test], axis=1)
+        bc_dict = bc_emb_test.set_index(0).T.to_dict('list')
+        input_test_df['BC_emb'] = input_test_df.progress_apply(make_embedding_feature, args=[bc_dict], axis=1)
+        gd_dict = gd_emb_test.set_index(0).T.to_dict('list')
+        input_test_df['GD_emb'] = input_test_df.progress_apply(make_embedding_feature, args=[gd_dict], axis=1)
+        mb_dict = mb_emb_test.set_index(0).T.to_dict('list')
+        input_test_df['MB_emb'] = input_test_df.progress_apply(make_embedding_feature, args=[mb_dict], axis=1)
+        pm_dict = pm_emb_test.set_index(0).T.to_dict('list')
+        input_test_df['PM_emb'] = input_test_df.progress_apply(make_embedding_feature, args=[pm_dict], axis=1)
 
         input_train_df = input_train_df[['BC_PA','BC_AA','BC_JC','BC_emb','GD_PA','GD_AA','GD_JC','GD_emb','MB_PA','MB_AA','MB_JC','MB_emb','PM_PA','PM_AA','PM_JC','PM_emb']]
         input_test_df = input_test_df[['BC_PA','BC_AA','BC_JC','BC_emb','GD_PA','GD_AA','GD_JC','GD_emb','MB_PA','MB_AA','MB_JC','MB_emb','PM_PA','PM_AA','PM_JC','PM_emb']]
