@@ -34,19 +34,6 @@ def preprocess_networks(edgelist, start_week, end_week):
 
     return weeks_subset
 
-def construct_graph(edgelist_df):
-    '''
-    This function constructs graph from the dataframe.
-    The graph is undirected and unweighted.
-    Input:
-      - edgelist_df: the dataframe which includes pairs of nodes and other columns
-    Output:
-      - g: the networkx graph object that is constructed using edgelist_df.
-    '''
-    edgelist = edgelist_df[['source', 'target']] # extract only the source and target nodes
-    g = nx.from_pandas_edgelist(edgelist) # construct the networkx graph using the dataframe
-    
-    return g
 
 def compute_emb_similarity(instance, emb_df):
     if instance[0] in emb_df.values[:,0] and instance[1] in emb_df.values[:,0]:
@@ -70,11 +57,6 @@ def make_embedding_feature(row, emb_df):
 
 if __name__ == "__main__":
     #--------------Initialize parameters------------------
-    bc_file = '../dataset/BC_df_modified_withmsg.csv'
-    gd_file = '../dataset/GD_df_modified_withmsg.csv'
-    mb_file = '../dataset/MB_df_modified_withmsg.csv'
-    pm_file = '../dataset/bilateral_PM_df.csv'
-
     # Input datafile with baseline features
     data_dir = 'data/proposed_model/'
 
@@ -82,18 +64,6 @@ if __name__ == "__main__":
     end_week = 101
     #----------------------------------------------------
 
-    print('Reading data files...')
-    # read the csv file for four channels
-    bc_edgelist = pd.read_csv(bc_file)
-    gd_edgelist = pd.read_csv(gd_file)
-    mb_edgelist = pd.read_csv(mb_file)
-    pm_edgelist = pd.read_csv(pm_file)
-
-    #divide each channel into weeks
-    bc_weeks_subset = preprocess_networks(bc_edgelist, start_week, end_week)
-    gd_weeks_subset = preprocess_networks(gd_edgelist, start_week, end_week)
-    mb_weeks_subset = preprocess_networks(mb_edgelist, start_week, end_week)
-    pm_weeks_subset = preprocess_networks(pm_edgelist, start_week, end_week)
 
     for i in range(end_week - start_week - 1):
     # for i in range(1):
@@ -102,23 +72,6 @@ if __name__ == "__main__":
         input_test_df = pd.read_csv(data_dir + 'bax_week{}_test.csv'.format(start_week+i))
 
         print('Making week{} train and test data...'.format(start_week+i))
-        bc_graph = construct_graph(bc_weeks_subset[i])
-        gd_graph = construct_graph(gd_weeks_subset[i])
-        mb_graph = construct_graph(mb_weeks_subset[i])
-        pm_graph = construct_graph(pm_weeks_subset[i])
-
-        # BC
-        nextweek_bc_graph = construct_graph(bc_weeks_subset[i+1])
-        nextnextweek_bc_graph = construct_graph(bc_weeks_subset[i+2])
-        # GD
-        nextweek_gd_graph = construct_graph(gd_weeks_subset[i+1])
-        nextnextweek_gd_graph = construct_graph(gd_weeks_subset[i+2])
-        # MB
-        nextweek_mb_graph = construct_graph(mb_weeks_subset[i+1])
-        nextnextweek_mb_graph = construct_graph(mb_weeks_subset[i+2])
-        # PM
-        nextweek_pm_graph = construct_graph(pm_weeks_subset[i+1])
-        nextnextweek_pm_graph = construct_graph(pm_weeks_subset[i+2])
 
         # Read embedded files for each channel (trainset)
         bc_emb_train = pd.read_csv('../dataset/emb_channel_weekly/week{}_unweighted_BC_train_32.emb'.format(i+start_week), sep=' ', skiprows=1, header=None)
