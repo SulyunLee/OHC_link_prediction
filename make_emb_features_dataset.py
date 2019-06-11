@@ -95,8 +95,8 @@ if __name__ == "__main__":
     mb_weeks_subset = preprocess_networks(mb_edgelist, start_week, end_week)
     pm_weeks_subset = preprocess_networks(pm_edgelist, start_week, end_week)
 
-    # for i in range(end_week - start_week - 1):
-    for i in range(1):
+    for i in range(end_week - start_week - 1):
+    # for i in range(1):
 
         input_train_df = pd.read_csv(data_dir + 'bax_week{}_train.csv'.format(start_week+i))
         input_test_df = pd.read_csv(data_dir + 'bax_week{}_test.csv'.format(start_week+i))
