@@ -1,7 +1,6 @@
 '''
 Author: Sulyun Lee
-This script generates the community-based and embedding-based features for the input dataset.
-community-based features: community membership features based on label propagation and modularity maximization
+This script generates the embedding-based features for the input dataset.
 embedding-based features: the similarity between the embedded vector representations.
 '''
 
@@ -36,6 +35,16 @@ def preprocess_networks(edgelist, start_week, end_week):
 
 
 def compute_emb_similarity(instance, emb_dict):
+    '''
+    This function computesthe similarity based on embedding for the given pair of nodes
+    Input:
+      - instance: Tuple. The name of two nodes are in this tuple.
+      - emb_dict: dictionary that includes the node names as the keys and the embedding
+                  representations as the values.
+    Output:
+      - 0 or similarity: If either of nodes do not exist in the dictionary, then return 0
+                         and otherwise, return float type of similarity value.
+    '''
     if instance[0] in emb_dict and instance[1] in emb_dict:
         node1_rep = np.array(emb_dict[instance[0]]).reshape(1,-1)
         node2_rep = np.array(emb_dict[instance[1]]).reshape(1,-1)
@@ -45,33 +54,18 @@ def compute_emb_similarity(instance, emb_dict):
     else:
         return 0
 
-def make_embedding_feature(row, emb_df):
-
-    instance = eval(row['pair'])
-    sim = compute_emb_similarity(instance, emb_df)
-
-    return sim
-
-'''
-def compute_emb_similarity(instance, emb_df):
-    if instance[0] in emb_df.values[:,0] and instance[1] in emb_df.values[:,0]:
-        node1_rep = emb_df.loc[emb_df.values[:,0] == instance[0],1:]
-        node2_rep = emb_df.loc[emb_df.values[:,0] == instance[1],1:]
-        similarity = float(cosine_similarity(node1_rep, node2_rep))
-        return similarity
-    # if either of nodes do not exist in the graph, return 0
-    else:
-        return 0
-
-def make_embedding_feature(row, emb_df):
-
-    instance = eval(row['pair'])
-    sim = compute_emb_similarity(instance, emb_df)
+def make_embedding_feature(row, emb_dict):
+    '''
+    This function generates the embbeding based features.
+    This function is applied to each row of a dataframe using progress_apply or apply built-in functions
+    Input:
+      - row: the row of the dataframe (not specified when this function is called)
+      - emb_dict: the dictionary that includes the nodes as keys and learned representations as values. 
+    '''
+    instance = eval(row['pair']) # the tuple of two nodes in 'pair' column of the dataframe
+    sim = compute_emb_similarity(instance, emb_dict)
 
     return sim
-'''
-    
-
 
 
 if __name__ == "__main__":
@@ -84,8 +78,8 @@ if __name__ == "__main__":
     #----------------------------------------------------
 
 
-    # for i in range(end_week - start_week - 1):
-    for i in range(1):
+    for i in range(end_week - start_week - 1):
+    # for i in range(1):
 
         input_train_df = pd.read_csv(data_dir + 'bax_week{}_train.csv'.format(start_week+i))
         input_test_df = pd.read_csv(data_dir + 'bax_week{}_test.csv'.format(start_week+i))
@@ -106,7 +100,7 @@ if __name__ == "__main__":
 
 
         tqdm.pandas()
-        bc_dict = bc_emb_train.set_index(0).T.to_dict('list')
+        bc_dict = bc_emb_train.set_index(0).T.to_dict('list') # make the embedding dictionary
         input_train_df['BC_emb'] = input_train_df.progress_apply(make_embedding_feature, args=[bc_dict], axis=1)
         gd_dict = gd_emb_train.set_index(0).T.to_dict('list')
         input_train_df['GD_emb'] = input_train_df.progress_apply(make_embedding_feature, args=[gd_dict], axis=1)
@@ -124,8 +118,9 @@ if __name__ == "__main__":
         pm_dict = pm_emb_test.set_index(0).T.to_dict('list')
         input_test_df['PM_emb'] = input_test_df.progress_apply(make_embedding_feature, args=[pm_dict], axis=1)
 
-        input_train_df = input_train_df[['BC_PA','BC_AA','BC_JC','BC_emb','GD_PA','GD_AA','GD_JC','GD_emb','MB_PA','MB_AA','MB_JC','MB_emb','PM_PA','PM_AA','PM_JC','PM_emb']]
-        input_test_df = input_test_df[['BC_PA','BC_AA','BC_JC','BC_emb','GD_PA','GD_AA','GD_JC','GD_emb','MB_PA','MB_AA','MB_JC','MB_emb','PM_PA','PM_AA','PM_JC','PM_emb']]
+        input_train_df = input_train_df[['pair','BC_PA','BC_AA','BC_JC','BC_emb','GD_PA','GD_AA','GD_JC','GD_emb','MB_PA','MB_AA','MB_JC','MB_emb','PM_PA','PM_AA','PM_JC','PM_emb','label']]
+        input_test_df = input_test_df[['pair','BC_PA','BC_AA','BC_JC','BC_emb','GD_PA','GD_AA','GD_JC','GD_emb','MB_PA','MB_AA','MB_JC','MB_emb','PM_PA','PM_AA','PM_JC','PM_emb','label']]
 
+        print('Writing dataset to csv file...')
         input_train_df.to_csv('data/proposed_emb/bax_week{}_train.csv'.format(start_week+i), index=False)
         input_test_df.to_csv('data/proposed_emb/bax_week{}_test.csv'.format(start_week+i), index=False)
