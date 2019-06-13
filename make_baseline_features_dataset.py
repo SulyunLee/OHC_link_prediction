@@ -110,31 +110,50 @@ def jaccard(G, instances):
     return jc
 
 def generate_2hop_instances(graph):
-        two_hop_generator = nx.all_pairs_shortest_path(graph, 2)
-        pairs = {}
-        for node in two_hop_generator:
-            author = node[0]
-            two_hop_authors = list(node[1].keys())
-            # Remove 0 hop (self pair)
-            pairs[author] = two_hop_authors[1:]
+    '''
+    This function generates all 2-hop node pairs in a given graph.
+    Input:
+      - graph: networkx graph to get the 2-hop node pairs
+    Output:
+      - instances: list of tuples. Each tuple is the pair of nodes that are 2 hops away.
+    '''
+    two_hop_generator = nx.all_pairs_shortest_path(graph, 2)
+    pairs = {}
+    for node in two_hop_generator:
+        author = node[0]
+        two_hop_authors = list(node[1].keys())
+        # Remove 0 hop (self pair)
+        pairs[author] = two_hop_authors[1:]
 
-        instances = []
-        for node in pairs:
-            for node2 in pairs[node]:
-                if aggregated_graph.has_edge(node, node2):
-                    continue
-                else:
-                    instances.append((node, node2))
+    instances = []
+    for node in pairs:
+        for node2 in pairs[node]:
+            if aggregated_graph.has_edge(node, node2):
+                continue
+            else:
+                instances.append((node, node2))
 
-        return instances
+    return instances
 
 def construct_dataset_weekly(instances, feature_graph, label_graph):
+    '''
+    This function constructs the dataset for supervised link prediction. 
+    The dataset has node pairs, baseline features, and labels.
+    The features are based on the current time period graph and the labels are based on the
+    next time period graph.
+    Input:
+      - instances: the list of tuples. Tuples are the node pairs
+      - feature_graph: the networkx graph to generate the features
+      - label_graph: the networkx graph to generate the labels
+    '''
+    # dictionary to generate dataframes
     train_dict = {'pair':instances}
-    test_dict = {'pair':instances}
 
+    # make the list of unique nodes from the instances
     flattened = [item for sublist in instances for item in sublist]
     node_set = set(flattened)
     nodes_not_included = [n for n in node_set if n not in feature_graph.nodes()]
+    # add nodes that exist in the instances but do not exist in the feature graph
     feature_graph.add_nodes_from(nodes_not_included)
 
     # Construct train dataset
@@ -145,8 +164,10 @@ def construct_dataset_weekly(instances, feature_graph, label_graph):
     jc = jaccard(feature_graph, instances)
     train_dict['JC'] = jc
 
+    # labels are based on the label_graph
     label = np.zeros((len(instances))).astype(bool)
     for idx, pair in enumerate(instances):
+        # if the node pairs are connected in the next time period, then set True
         if label_graph.has_edge(pair[0], pair[1]):
             label[idx] = True
 
@@ -227,7 +248,6 @@ if __name__ == "__main__":
         test_new_instances = set(test_instances) - set(train_instances)
         test_new_instances = list(test_new_instances)
 
-    ''' 
         print('Generating first model...')
         ## Baseline models with 3 features in aggregated network 
         train_df = construct_dataset_weekly(train_instances, aggregated_graph, nextweek_agg_graph)
@@ -317,7 +337,6 @@ if __name__ == "__main__":
 
     summary_df = pd.DataFrame(summary_dict)
     summary_df.to_csv('summary_statistics.csv')
-    '''
     
 
 
