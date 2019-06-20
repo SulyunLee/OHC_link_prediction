@@ -50,7 +50,7 @@ if __name__ == "__main__":
     user_lda_df = generate_lda_df(start_week, end_week)
 
 
-    for i in range(end_week - start_week - 1):
+    for i in range(1,end_week - start_week - 1):
     # for i in range(1):
 
         input_train_df = pd.read_csv(data_dir + 'bax_week{}_train.csv'.format(start_week+i))
@@ -63,16 +63,14 @@ if __name__ == "__main__":
         input_train_df['BC_Textsim'] = input_train_df.progress_apply(make_textsim_feature, args=[user_lda_thisweek, 'BC'], axis=1)
         input_train_df['GD_Textsim'] = input_train_df.progress_apply(make_textsim_feature, args=[user_lda_thisweek, 'GD'], axis=1)
         input_train_df['MB_Textsim'] = input_train_df.progress_apply(make_textsim_feature, args=[user_lda_thisweek, 'MB'], axis=1)
-        input_train_df['PM_Textsim'] = input_train_df.progress_apply(make_textsim_feature, args=[user_lda_thisweek, 'PM'], axis=1)
 
         user_lda_nextweek = user_lda_df.loc[user_lda_df['Week'] == start_week+i+1,]
-        input_test_df['BC_Textsim'] = input_test_df.progress_apply(make_textsim_feature, args[user_lda_nextweek, 'BC'], axis=1)
-        input_test_df['GD_Textsim'] = input_test_df.progress_apply(make_textsim_feature, args[user_lda_nextweek, 'GD'], axis=1)
-        input_test_df['MB_Textsim'] = input_test_df.progress_apply(make_textsim_feature, args[user_lda_nextweek, 'MB'], axis=1)
-        input_test_df['PM_Textsim'] = input_test_df.progress_apply(make_textsim_feature, args[user_lda_nextweek, 'PM'], axis=1)
+        input_test_df['BC_Textsim'] = input_test_df.progress_apply(make_textsim_feature, args=[user_lda_nextweek, 'BC'], axis=1)
+        input_test_df['GD_Textsim'] = input_test_df.progress_apply(make_textsim_feature, args=[user_lda_nextweek, 'GD'], axis=1)
+        input_test_df['MB_Textsim'] = input_test_df.progress_apply(make_textsim_feature, args=[user_lda_nextweek, 'MB'], axis=1)
 
-        input_train_df = input_train_df[['pair','BC_PA','BC_AA','BC_JC','BC_emb','GD_PA','GD_AA','GD_JC','GD_emb','MB_PA','MB_AA','MB_JC','MB_emb','PM_PA','PM_AA','PM_JC','PM_emb','label']]
-        input_test_df = input_test_df[['pair','BC_PA','BC_AA','BC_JC','BC_Textsim','GD_PA','GD_AA','GD_JC','GD_Textsim','MB_PA','MB_AA','MB_JC','MB_Textsim','PM_PA','PM_AA','PM_JC','PM_Textsim','label']]
+        input_train_df = input_train_df[['pair','BC_PA','BC_AA','BC_JC','BC_Textsim','GD_PA','GD_AA','GD_JC','GD_Textsim','MB_PA','MB_AA','MB_JC','MB_Textsim','PM_PA','PM_AA','PM_JC','label']]
+        input_test_df = input_test_df[['pair','BC_PA','BC_AA','BC_JC','BC_Textsim','GD_PA','GD_AA','GD_JC','GD_Textsim','MB_PA','MB_AA','MB_JC','MB_Textsim','PM_PA','PM_AA','PM_JC','label']]
 
         print('Writing dataset to csv file...')
         input_train_df.to_csv('data/proposed_textsim/bax_week{}_train.csv'.format(start_week+i), index=False)
