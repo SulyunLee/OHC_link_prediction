@@ -22,11 +22,19 @@ if __name__ == "__main__":
                    "baseline_GD",
                    "baseline_MB",
                    "baseline_PM",
-                   "proposed_model"]
+                   "proposed_model",
+                   "proposed_com",
+                   "proposed_emb",
+                   "proposed_textsim",
+                   "proposed_cet"
+                   ]
+
     classifier_list = ["rf", 
                        "logit",
                        "nb",
-                       "ab"]
+                       "ab",
+                       "nn"
+                       ]
     metric_list = ["precision",
                    "top10_precision",
                    "top10_ndcg",
