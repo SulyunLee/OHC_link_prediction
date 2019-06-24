@@ -91,7 +91,8 @@ if __name__ == "__main__":
         y_test = np.array(test_df['label'])
 
         # clf = RandomForestClassifier(n_estimators=50, max_depth=3)
-        clf = RandomForestClassifier(n_estimators=50)
+        # clf = RandomForestClassifier(n_estimators=50)
+        clf = RandomForestClassifier()
         try:
             clf.fit(X_train, y_train)
 
