@@ -204,8 +204,8 @@ if __name__ == "__main__":
 
     summary_dict = {'Aggregated_new_edges':[], 'BC_new_edges':[], 'GD_new_edges':[], 'MB_new_edges':[], 'PM_new_edges':[]}
 
-    # for i in range(end_week - start_week-1):
-    for i in range(12, 13):
+    for i in range(end_week - start_week-1):
+    # for i in range(12, 13):
 
         # construct graphs based on each channel
         print('Making week{} train and test data...'.format(start_week+i))
