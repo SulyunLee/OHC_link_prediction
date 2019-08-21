@@ -1,5 +1,22 @@
 import pandas as pd
 
+def generate_cet_dataset(com_df, emb_df, textsim_df):
+        cet_combined_df = pd.concat([com_df, emb_df[['BC_emb','GD_emb','MB_emb','PM_emb']]], axis=1)
+        cet_combined_df = pd.concat([cet_combined_df, textsim_df[['BC_Textsim','GD_Textsim','MB_Textsim']]], axis=1)
+
+        cet_combined_df = cet_combined_df[['pair', 'BC_PA', 'BC_AA', 'BC_JC', 'BC_CM', 'BC_CLP', 'BC_emb', 'BC_Textsim',
+                                        'GD_PA', 'GD_AA', 'GD_JC', 'GD_CM', 'GD_CLP', 'GD_emb', 'GD_Textsim',
+                                        'MB_PA', 'MB_AA', 'MB_JC', 'MB_CM', 'MB_CLP', 'MB_emb', 'MB_Textsim',
+                                        'PM_PA', 'PM_AA', 'PM_JC', 'PM_CM', 'PM_CLP', 'PM_emb', 'label']]
+        
+        return cet_combined_df
+    
+def generate_comemb_dataset(com_df, emb_df):
+    comemb_combined_df = pd.concat([com_df, emb_df[['BC_emb', 'GD_emb', 'MB_emb', 'PM_emb']]], axis=1)
+    comemb_combined_df = comemb_combined_df[['pair', 'BC_PA', 'BC_AA', 'BC_JC', 'BC_CM', 'BC_CLP', 'BC_emb', 'GD_PA', 'GD_AA', 'GD_JC', 'GD_CM', 'GD_CLP', 'GD_emb', 'MB_PA', 'MB_AA', 'MB_JC', 'MB_CM', 'MB_CLP', 'MB_emb','PM_PA', 'PM_AA', 'PM_JC', 'PM_CM', 'PM_CLP', 'PM_emb', 'label']]
+
+    return comemb_combined_df
+
 if __name__ == "__main__":
     com_folder = "data/proposed_com/"
     emb_folder = "data/proposed_emb/"
@@ -19,36 +36,24 @@ if __name__ == "__main__":
         emb_test_filename = "{}bax_week{}_test.csv".format(emb_folder, i+start_week)
         textsim_test_filename = "{}bax_week{}_test.csv".format(textsim_folder, i+start_week)
         
-
-        # Train
         com_train = pd.read_csv(com_train_filename)
         emb_train = pd.read_csv(emb_train_filename)
         textsim_train = pd.read_csv(textsim_train_filename)
 
-        combined_train = pd.concat([com_train, emb_train[['BC_emb','GD_emb','MB_emb','PM_emb']]], axis=1)
-        combined_train = pd.concat([combined_train, textsim_train[['BC_Textsim','GD_Textsim','MB_Textsim']]], axis=1)
-
-        combined_train = combined_train[['pair', 'BC_PA', 'BC_AA', 'BC_JC', 'BC_CM', 'BC_CLP', 'BC_emb', 'BC_Textsim',
-                                        'GD_PA', 'GD_AA', 'GD_JC', 'GD_CM', 'GD_CLP', 'GD_emb', 'GD_Textsim',
-                                        'MB_PA', 'MB_AA', 'MB_JC', 'MB_CM', 'MB_CLP', 'MB_emb', 'MB_Textsim',
-                                        'PM_PA', 'PM_AA', 'PM_JC', 'PM_CM', 'PM_CLP', 'PM_emb', 'label']]
-
-        combined_train.to_csv("data/proposed_cet/bax_week{}_train.csv".format(i+start_week))
-
-        # Test
         com_test = pd.read_csv(com_test_filename)
         emb_test = pd.read_csv(emb_test_filename)
         textsim_test = pd.read_csv(textsim_test_filename)
+        
+        print('Writing combined datasets to csv file...')
+        cet_combined_train = generate_cet_dataset(com_train, emb_train, textsim_train)
+        cet_combined_train.to_csv("data/proposed_cet/bax_week{}_train.csv".format(i+start_week))
+        cet_combined_test = generate_cet_dataset(com_test, emb_test, textsim_test)
+        cet_combined_test.to_csv("data/proposed_cet/bax_week{}_test.csv".format(i+start_week))
 
-        combined_test = pd.concat([com_test, emb_test[['BC_emb','GD_emb','MB_emb','PM_emb']]], axis=1)
-        combined_test = pd.concat([combined_test, textsim_test[['BC_Textsim','GD_Textsim','MB_Textsim']]], axis=1)
-
-        combined_test = combined_test[['pair', 'BC_PA', 'BC_AA', 'BC_JC', 'BC_CM', 'BC_CLP', 'BC_emb', 'BC_Textsim',
-                                        'GD_PA', 'GD_AA', 'GD_JC', 'GD_CM', 'GD_CLP', 'GD_emb', 'GD_Textsim',
-                                        'MB_PA', 'MB_AA', 'MB_JC', 'MB_CM', 'MB_CLP', 'MB_emb', 'MB_Textsim',
-                                        'PM_PA', 'PM_AA', 'PM_JC', 'PM_CM', 'PM_CLP', 'PM_emb', 'label']]
-
-        combined_test.to_csv("data/proposed_cet/bax_week{}_test.csv".format(i+start_week))
+        comemb_combined_train = generate_comemb_dataset(com_train, emb_train)
+        comemb_combined_train.to_csv("data/proposed_comemb/bax_week{}_train.csv".format(i+start_week))
+        comemb_combined_test = generate_comemb_dataset(com_train, emb_train)
+        comemb_combined_test.to_csv("data/proposed_comemb/bax_week{}_test.csv".format(i+start_week))
 
 
 
