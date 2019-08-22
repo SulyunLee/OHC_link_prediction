@@ -7,7 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
-    df = pd.read_csv("summary/summary_week_50_100.csv")
+    df = pd.read_csv("summary/summary_week_50_Aug22.csv")
     # Rename the first column
     df.rename(columns={'Unnamed: 0':'metric'}, inplace=True)
     
