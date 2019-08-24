@@ -7,7 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
-    df = pd.read_csv("summary/summary_week_50_Aug22.csv")
+    df = pd.read_csv("summary/summary_week_50_Aug23.csv")
     # Rename the first column
     df.rename(columns={'Unnamed: 0':'metric'}, inplace=True)
     
@@ -29,6 +29,11 @@ if __name__ == "__main__":
     # Drop recall, top50prec, top50ndcg
     df_max.drop(df_max.index[[1,6,7]], inplace=True)
 
-    df_max.plot.bar(x="metric", rot=0)
-    plt.show()
+    df_max.plot.bar(x="metric", rot=0, figsize=(10, 6), legend=False)
+    plt.subplots_adjust(right=0.8)
+    plt.grid()
+    plt.legend(bbox_to_anchor=(1,0.5), loc="center left")
+    # plt.show()
+    plt.savefig("models_bar.png")
+    plt.close()
 

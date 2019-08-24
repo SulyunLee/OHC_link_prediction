@@ -30,29 +30,29 @@ if __name__ == "__main__":
         print('Generating week {} train and test dataset...'.format(i+start_week))
         com_train_filename = "{}bax_week{}_train.csv".format(com_folder, i+start_week)
         emb_train_filename = "{}bax_week{}_train.csv".format(emb_folder, i+start_week)
-        textsim_train_filename = "{}bax_week{}_train.csv".format(textsim_folder, i+start_week)
+        # textsim_train_filename = "{}bax_week{}_train.csv".format(textsim_folder, i+start_week)
 
         com_test_filename = "{}bax_week{}_test.csv".format(com_folder, i+start_week)
         emb_test_filename = "{}bax_week{}_test.csv".format(emb_folder, i+start_week)
-        textsim_test_filename = "{}bax_week{}_test.csv".format(textsim_folder, i+start_week)
+        # textsim_test_filename = "{}bax_week{}_test.csv".format(textsim_folder, i+start_week)
         
         com_train = pd.read_csv(com_train_filename)
         emb_train = pd.read_csv(emb_train_filename)
-        textsim_train = pd.read_csv(textsim_train_filename)
+        # textsim_train = pd.read_csv(textsim_train_filename)
 
         com_test = pd.read_csv(com_test_filename)
         emb_test = pd.read_csv(emb_test_filename)
-        textsim_test = pd.read_csv(textsim_test_filename)
+        # textsim_test = pd.read_csv(textsim_test_filename)
         
         print('Writing combined datasets to csv file...')
-        cet_combined_train = generate_cet_dataset(com_train, emb_train, textsim_train)
-        cet_combined_train.to_csv("data/proposed_cet/bax_week{}_train.csv".format(i+start_week), index=False)
-        cet_combined_test = generate_cet_dataset(com_test, emb_test, textsim_test)
-        cet_combined_test.to_csv("data/proposed_cet/bax_week{}_test.csv".format(i+start_week), index=False)
+        # cet_combined_train = generate_cet_dataset(com_train, emb_train, textsim_train)
+        # cet_combined_train.to_csv("data/proposed_cet/bax_week{}_train.csv".format(i+start_week), index=False)
+        # cet_combined_test = generate_cet_dataset(com_test, emb_test, textsim_test)
+        # cet_combined_test.to_csv("data/proposed_cet/bax_week{}_test.csv".format(i+start_week), index=False)
 
-        comemb_combined_train = generate_comemb_dataset(com_train, emb_train)
-        comemb_combined_train.to_csv("data/proposed_comemb/bax_week{}_train.csv".format(i+start_week), index=False)
-        comemb_combined_test = generate_comemb_dataset(com_train, emb_train)
+        # comemb_combined_train = generate_comemb_dataset(com_train, emb_train)
+        # comemb_combined_train.to_csv("data/proposed_comemb/bax_week{}_train.csv".format(i+start_week), index=False)
+        comemb_combined_test = generate_comemb_dataset(com_test, emb_test)
         comemb_combined_test.to_csv("data/proposed_comemb/bax_week{}_test.csv".format(i+start_week), index=False)
 
 
