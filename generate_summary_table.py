@@ -32,7 +32,6 @@ if __name__ == "__main__":
 
     classifier_list = ["rf", 
                        "logit",
-                       "nb",
                        "ab",
                        "nn"
                        ]
