@@ -29,6 +29,7 @@ if __name__ == "__main__":
                    "proposed_comemb",
                    "proposed_cet"
                    ]
+    folder_list = ["proposed_model_weighted"]
 
     classifier_list = ["rf", 
                        "logit",
@@ -73,4 +74,4 @@ if __name__ == "__main__":
             )
 
     # df_summary.to_csv("summary/summary_week_{}_{}.csv".format(startweek, endweek))
-    df_summary.to_csv("summary/summary_week_{}_Aug23.csv".format(startweek, endweek))
+    df_summary.to_csv("summary/summary_week_{}_{}_weighted.csv".format(startweek, endweek))

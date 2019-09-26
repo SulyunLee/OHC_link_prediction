@@ -245,9 +245,27 @@ if __name__ == "__main__":
         # make instances for test aggregated network
         # consider only new links in test dataset
         test_instances = generate_2hop_instances(nextweek_agg_graph)
-        test_new_instances = set(test_instances) - set(train_instances)
-        test_new_instances = list(test_new_instances)
+        # print(len(test_instances))
+        # test_new_instances = set(test_instances) - set(train_instances)
+        intersect = set(test_instances).intersection(set(train_instances))
 
+        intersect_sum = 0
+        for n in intersect:
+            if n in nextnextweek_agg_graph.edges():
+                intersect_sum += 1
+        # print(intersect_sum)
+        # print(intersect_sum / len(test_instances))
+        print(intersect_sum / len(intersect))
+
+        test_instance_sum = 0
+        for n in test_instances:
+            if n in nextnextweek_agg_graph.edges():
+                test_instance_sum += 1
+        # print(test_instance_sum)
+        print(test_instance_sum / len(test_instances))
+
+        # test_new_instances = list(test_new_instances)
+        '''
         print('Generating first model...')
         ## Baseline models with 3 features in aggregated network 
         train_df = construct_dataset_weekly(train_instances, aggregated_graph, nextweek_agg_graph)
@@ -337,6 +355,7 @@ if __name__ == "__main__":
 
     summary_df = pd.DataFrame(summary_dict)
     summary_df.to_csv('summary_statistics.csv')
+        '''
     
 
 
