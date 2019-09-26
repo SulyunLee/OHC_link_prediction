@@ -62,7 +62,8 @@ if __name__ == "__main__":
 
     # column_names = strategy_list * n_folder
     column_names = folder_list
-    row_names = metric_list * n_classifier
+    # row_names = metric_list * n_classifier
+    row_names = classifier_list * n_metric
 
     df_summary = pd.DataFrame(
             data = summary,
@@ -105,7 +106,8 @@ if __name__ == "__main__":
 
     # column_names = strategy_list * n_folder
     column_names = folder_list
-    row_names = metric_list * n_classifier
+    # row_names = metric_list * n_classifier
+    row_names = classifier_list * n_metric
 
     df_summary = pd.DataFrame(
             data = summary,
